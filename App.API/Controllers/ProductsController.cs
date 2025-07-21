@@ -8,6 +8,9 @@ public class ProductsController(IProductService productService) : CustomBaseCont
     [HttpGet]
     public async Task<IActionResult> GetAll() => CreateActionResult(await productService.GetAllAsync());
 
+    [HttpGet("{pageNumber}/{pageSize}")]
+    public async Task<IActionResult> GetPagedAll(int pageNumber, int pageSize) => CreateActionResult(await productService.GetPagedAllAsync(pageNumber, pageSize));
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id) => CreateActionResult(await productService.GetByIdAsync(id));
 

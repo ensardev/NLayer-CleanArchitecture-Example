@@ -63,6 +63,16 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
         return ServiceResult<List<ProductResponse>>.Success(productResponses);
     }
 
+    public async Task<ServiceResult<List<ProductResponse>>> GetPagedAllAsync(int pageNumber, int pageSize)
+    {
+        var products = await productRepository.GetAll()
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        var productResponses = products.Select(p => new ProductResponse(p.Id, p.Name, p.Price, p.Stock)).ToList();
+        return ServiceResult<List<ProductResponse>>.Success(productResponses);
+    }
+
     public async Task<ServiceResult<ProductResponse?>> GetByIdAsync(int id)
     {
         var product = await productRepository.GetByIdAsync(id);
