@@ -5,6 +5,7 @@ using App.Services.Products.Update;
 using Azure.Core;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using App.Services.ExceptionHandlers;
 using AutoMapper;
 
 namespace App.Services.Products;
