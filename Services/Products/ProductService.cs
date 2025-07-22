@@ -1,12 +1,15 @@
 ﻿using App.Repositories;
 using App.Repositories.Products;
+using App.Services.Products.Create;
+using App.Services.Products.Update;
 using Azure.Core;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using AutoMapper;
 
 namespace App.Services.Products;
 
-public class ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork) : IProductService
+public class ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork, IMapper mapper) : IProductService
 {
     public async Task<ServiceResult<CreateProductResponse>> CreateAsync(CreateProductRequest request)
     {
@@ -82,8 +85,7 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
     public async Task<ServiceResult<List<ProductResponse>>> GetAllAsync()
     {
         var products = await productRepository.GetAll().ToListAsync();
-
-        var productResponses = products.Select(p => new ProductResponse(p.Id, p.Name, p.Price, p.Stock)).ToList();
+        var productResponses = mapper.Map<List<ProductResponse>>(products);
 
         return ServiceResult<List<ProductResponse>>.Success(productResponses);
     }
@@ -94,20 +96,20 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
-        var productResponses = products.Select(p => new ProductResponse(p.Id, p.Name, p.Price, p.Stock)).ToList();
+
+        var productResponses = mapper.Map<List<ProductResponse>>(products);
+
         return ServiceResult<List<ProductResponse>>.Success(productResponses);
     }
 
     public async Task<ServiceResult<ProductResponse?>> GetByIdAsync(int id)
     {
         var product = await productRepository.GetByIdAsync(id);
-
         if (product is null)
         {
-            ServiceResult<ProductResponse>.Failure($"Product with ID {id} not found.", HttpStatusCode.NotFound);
+            return ServiceResult<ProductResponse>.Failure($"Product with ID {id} not found.", HttpStatusCode.NotFound);
         }
-
-        var productResponse = new ProductResponse(product!.Id, product.Name, product.Price, product.Stock);
+        var productResponse = mapper.Map<ProductResponse>(product);
 
         return ServiceResult<ProductResponse>.Success(productResponse)!;
     }
@@ -115,8 +117,7 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
     public async Task<ServiceResult<List<ProductResponse>>> GetTopPriceProductsAsync(int count)
     {
         var products = await productRepository.GetTopPriceProductsAsync(count);
-
-        var productResponse = products.Select(p => new ProductResponse(p.Id, p.Name, p.Price, p.Stock)).ToList();
+        var productResponse = mapper.Map<List<ProductResponse>>(products);
 
         return new ServiceResult<List<ProductResponse>>()
         {
