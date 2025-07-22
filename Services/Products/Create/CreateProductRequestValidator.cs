@@ -15,6 +15,9 @@ public class CreateProductRequestValidator:AbstractValidator<CreateProductReques
 
         RuleFor(x => x.Stock)
             .GreaterThanOrEqualTo(0).WithMessage("Product stock cannot be negative.");
+
+        RuleFor(x => x.CategoryId)
+            .GreaterThan(0).WithMessage("Category ID must be greater than zero.");
     }
 }
 
