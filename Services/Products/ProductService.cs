@@ -1,5 +1,6 @@
 ﻿using App.Repositories;
 using App.Repositories.Products;
+using Azure.Core;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
@@ -32,6 +33,23 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
 
         product.Name = request.Name;
         product.Price = request.Price;
+        product.Stock = request.Stock;
+
+        productRepository.Update(product);
+        await unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Success(HttpStatusCode.NoContent);
+    }
+
+    public async Task<ServiceResult> UpdateStockAsync(UpdateProductStockRequest request)
+    {
+        var product = await productRepository.GetByIdAsync(request.ProductId);
+
+        if (product is null)
+        {
+            return ServiceResult.Failure($"Product with ID {request.ProductId} not found.", HttpStatusCode.NotFound);
+        }
+
         product.Stock = request.Stock;
 
         productRepository.Update(product);
