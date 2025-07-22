@@ -18,7 +18,7 @@ public class CategoryService(ICategoryRepository categoryRepository, IUnitOfWork
             return ServiceResult<CreateCategoryResponse>.Failure($"Category with name '{request.Name}' already exists.", System.Net.HttpStatusCode.Conflict);
         }
 
-        var newCategory = new Category { Name = request.Name };
+        var newCategory = mapper.Map<Category>(request);
 
         await categoryRepository.AddAsync(newCategory);
         await unitOfWork.SaveChangesAsync();
@@ -101,7 +101,7 @@ public class CategoryService(ICategoryRepository categoryRepository, IUnitOfWork
 
     public async Task<ServiceResult<List<CategoryWithProductsResponse>>> GetCategoryWithProductsAsync()
     {
-        var categories = categoryRepository.GetCategoryWithProducts().ToListAsync();
+        var categories = await categoryRepository.GetCategoryWithProducts().ToListAsync();
 
         var categoryResponses = mapper.Map<List<CategoryWithProductsResponse>>(categories);
 
