@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net;
 using App.Services.ExceptionHandlers;
 using AutoMapper;
+using App.Services.Products.UpdateStock;
 
 namespace App.Services.Products;
 
@@ -14,9 +15,9 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
 {
     public async Task<ServiceResult<CreateProductResponse>> CreateAsync(CreateProductRequest request)
     {
-        var anyProduct = await productRepository.Where(p => p.Name == request.Name).AnyAsync();
+        var isExistProductName = await productRepository.Where(p => p.Name == request.Name).AnyAsync();
 
-        if (anyProduct)
+        if (isExistProductName)
         {
             return ServiceResult<CreateProductResponse>.Failure($"Product with name '{request.Name}' already exists.", HttpStatusCode.Conflict);
         }
@@ -37,9 +38,17 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
     public async Task<ServiceResult> UpdateAsync(int id, UpdateProductRequest request)
     {
         var product = await productRepository.GetByIdAsync(id);
+
         if (product is null)
         {
             return ServiceResult.Failure($"Product with ID {id} not found.", HttpStatusCode.NotFound);
+        }
+
+        var isExistProductName = await productRepository.Where(p => p.Name == request.Name && p.Id != product.Id).AnyAsync();
+
+        if (isExistProductName)
+        {
+            return ServiceResult.Failure($"Product with name '{request.Name}' already exists.", HttpStatusCode.Conflict);
         }
 
         product.Name = request.Name;
