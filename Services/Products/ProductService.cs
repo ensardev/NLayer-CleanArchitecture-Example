@@ -10,13 +10,20 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
 {
     public async Task<ServiceResult<CreateProductResponse>> CreateAsync(CreateProductRequest request)
     {
+        var anyProduct = await productRepository.Where(p => p.Name == request.Name).AnyAsync();
+
+        if (anyProduct)
+        {
+            return ServiceResult<CreateProductResponse>.Failure($"Product with name '{request.Name}' already exists.", HttpStatusCode.Conflict);
+        }
+
         var product = new Product
         {
             Name = request.Name,
             Price = request.Price,
             Stock = request.Stock
         };
-        
+
         await productRepository.AddAsync(product);
         await unitOfWork.SaveChangesAsync();
 
@@ -109,7 +116,7 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
     {
         var products = await productRepository.GetTopPriceProductsAsync(count);
 
-        var productResponse = products.Select(p=> new ProductResponse(p.Id, p.Name, p.Price, p.Stock)).ToList();
+        var productResponse = products.Select(p => new ProductResponse(p.Id, p.Name, p.Price, p.Stock)).ToList();
 
         return new ServiceResult<List<ProductResponse>>()
         {
