@@ -8,7 +8,6 @@ public class CreateProductRequestValidator:AbstractValidator<CreateProductReques
     {
         RuleFor(x => x.Name)
             .NotNull().WithMessage("Product name is required.")
-            .NotEmpty().WithMessage("Product name cannot be empty.")
             .Length(5, 250).WithMessage("Product name must be between 5 and 250 characters long.");
 
         RuleFor(x => x.Price)
@@ -16,10 +15,6 @@ public class CreateProductRequestValidator:AbstractValidator<CreateProductReques
 
         RuleFor(x => x.Stock)
             .GreaterThanOrEqualTo(0).WithMessage("Product stock cannot be negative.");
-
-
-
-
     }
 }
 
